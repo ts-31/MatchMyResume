@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MatchMyResume</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 10px;
+        width: 300px;
+      }
+
+      textarea {
+        width: 100%;
+        height: 80px;
+        margin-top: 10px;
+      }
+
+      button {
+        margin-top: 10px;
+        width: 100%;
+        padding: 6px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      pre {
+        margin-top: 10px;
+        background: #f4f4f4;
+        padding: 6px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>MatchMyResume</h3>
+    <input type="file" id="resume" accept=".pdf" />
+    <textarea id="jd" placeholder="Paste job description here..."></textarea>
+    <button id="submit">Analyze</button>
+    <pre id="output"></pre>
+    <script src="popup.js"></script>
+  </body>
+</html>
