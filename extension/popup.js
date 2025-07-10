@@ -1,6 +1,15 @@
 document.getElementById("submit").addEventListener("click", async () => {
   const fileInput = document.getElementById("resume");
   const jdInput = document.getElementById("jd");
+
+  if (!fileInput.files[0]) {
+    return showToast("❌ Please upload a resume.");
+  }
+
+  if (!jdInput.value.trim()) {
+    return showToast("❌ Please paste a job description.");
+  }
+
   const formData = new FormData();
   formData.append("resume", fileInput.files[0]);
   formData.append("jd", jdInput.value);
@@ -10,11 +19,17 @@ document.getElementById("submit").addEventListener("click", async () => {
       method: "POST",
       body: formData,
     });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Server error occurred.");
+    }
+
     const data = await res.json();
     console.log("Response:", data);
 
     const output = document.getElementById("output");
-    output.innerHTML = ""; 
+    output.innerHTML = "";
 
     const score = document.createElement("p");
     score.innerHTML = `<strong>✅ Match Score:</strong> ${data.matchScore}`;
@@ -32,7 +47,17 @@ document.getElementById("submit").addEventListener("click", async () => {
     });
     output.appendChild(list);
   } catch (err) {
-    document.getElementById("output").innerText =
-      "Failed to connect to server.";
+    console.error("Frontend error:", err.message);
+    showToast(`❌ ${err.message}`);
+    document.getElementById("output").innerHTML = "";
   }
 });
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.style.display = "block";
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 3000);
+}

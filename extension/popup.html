@@ -36,6 +36,28 @@
         padding: 6px;
         white-space: pre-wrap;
       }
+
+      /* ✅ Toast Styling */
+      #toast {
+        display: none;
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        background-color: #f44336;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        z-index: 9999;
+        animation: fadeInOut 3s ease forwards;
+      }
+
+      @keyframes fadeInOut {
+        0% { opacity: 0; transform: translateY(-10px); }
+        10% { opacity: 1; transform: translateY(0); }
+        90% { opacity: 1; }
+        100% { opacity: 0; transform: translateY(-10px); }
+      }
     </style>
   </head>
   <body>
@@ -44,6 +66,10 @@
     <textarea id="jd" placeholder="Paste job description here..."></textarea>
     <button id="submit">Analyze</button>
     <pre id="output"></pre>
+
+    <!-- ✅ Toast -->
+    <div id="toast"></div>
+
     <script src="popup.js"></script>
   </body>
 </html>

@@ -11,10 +11,16 @@ export async function getGeminiSuggestions(resume, jobDescription) {
     `User: Here's my resume:\n${resume}\n` +
     `Assistant: Suggest 2 improvements:`;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
 
-  return response.text.split("\n").filter(Boolean);
+    const text = response?.text?.trim();
+    return text ? text.split("\n").filter(Boolean) : ["No suggestions received."];
+  } catch (err) {
+    console.error("Gemini error:", err.message);
+    throw new Error("Failed to get suggestions from Gemini.");
+  }
 }
