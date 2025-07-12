@@ -23,7 +23,10 @@
         <span id="close-widget" style="cursor: pointer; font-weight: bold; padding: 0 8px;">✖️</span>
       </div>
       <div style="padding-top: 10px">
-        <input type="file" id="resume-file" accept=".pdf" /><br><br>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <input type="file" id="resume-file" accept=".pdf" style="flex-grow: 1;" />
+          <span id="resume-status" style="font-size: 13px; color: green;"></span>
+        </div>
         <div>
           <textarea id="jd-textarea" placeholder="Job description..." style="width:100%;height:80px;"></textarea>
         </div>
@@ -34,6 +37,14 @@
       </div>
     `;
   document.body.appendChild(widget);
+  chrome.storage.local.get("resume", (result) => {
+    const status = document.getElementById("resume-status");
+    if (result.resume) {
+      status.textContent = "📎 Resume uploaded";
+    } else {
+      status.textContent = ""; 
+    }
+  });
 
   document.getElementById("close-widget").addEventListener("click", () => {
     document.getElementById("matchmyresume-widget").remove();
@@ -47,13 +58,29 @@
     setTimeout(() => (toast.style.display = "none"), 3000);
   }
 
-  // 3. JD Scraper with MutationObserver
+  // 3. Resume upload handler with chrome.storage.local
+  document.getElementById("resume-file").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result;
+      chrome.storage.local.set({ resume: base64 }, () => {
+        showToast("✅ Resume saved");
+        document.getElementById("resume-status").textContent =
+          "📎 Resume uploaded";
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // 4. JD Scraper with MutationObserver
   function extractJD() {
     const textarea = document.getElementById("jd-textarea");
 
-    // Highlight effect: background and text color flash
-    textarea.style.backgroundColor = "#e6f7ff"; // light blue
-    textarea.style.color = "#004085"; // darker blue
+    textarea.style.backgroundColor = "#e6f7ff";
+    textarea.style.color = "#004085";
 
     setTimeout(() => {
       const jdContainer =
@@ -71,12 +98,11 @@
       }${jdContainer ? jdContainer.innerText : ""}`;
       textarea.value = text.trim();
 
-      // Reset styles after 500ms
       setTimeout(() => {
         textarea.style.backgroundColor = "";
         textarea.style.color = "";
       }, 500);
-    }, 200); // slight delay for visual effect
+    }, 200); 
   }
 
   const observer = new MutationObserver(() => {
@@ -84,11 +110,10 @@
   });
 
   observer.observe(document.body, { subtree: true, childList: true });
-  setTimeout(extractJD, 2000); // initial call
+  setTimeout(extractJD, 2000); 
 
-  // 4. Analyze button logic
+  // 5. Analyze button logic with chrome.storage.local resume retrieval
   document.getElementById("analyze-btn").addEventListener("click", async () => {
-    const fileInput = document.getElementById("resume-file");
     const jd = document.getElementById("jd-textarea").value;
     const output = document.getElementById("output-box");
     const button = document.getElementById("analyze-btn");
@@ -96,34 +121,51 @@
     output.style.maxHeight = "200px";
     output.style.overflowY = "auto";
 
-    if (!fileInput.files[0]) return showToast("❌ Please upload resume");
     if (!jd.trim()) return showToast("❌ Job description missing");
-
-    const formData = new FormData();
-    formData.append("resume", fileInput.files[0]);
-    formData.append("jd", jd);
 
     button.disabled = true;
     button.innerText = "Thinking... ⏳";
 
-    try {
-      const res = await fetch("http://localhost:3000/api/match", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      output.innerHTML = `✅ Match Score: ${
-        data.matchScore
-      }\n\n🔧 Suggestions:\n${data.suggestions
-        .map((s) => `- ${s}`)
-        .join("\n")}`;
-    } catch (err) {
-      console.error(err);
-      showToast("❌ Failed to fetch results");
-    } finally {
-      button.disabled = false;
-      button.innerText = "Analyze";
-    }
+    chrome.storage.local.get(["resume"], async (result) => {
+      const base64 = result.resume;
+      if (!base64) {
+        button.disabled = false;
+        button.innerText = "Analyze";
+        return showToast("❌ Please upload resume first");
+      }
+
+      const byteString = atob(base64.split(",")[1]);
+      const mimeString = base64.split(",")[0].split(":")[1].split(";")[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const resumeBlob = new Blob([ab], { type: mimeString });
+
+      const formData = new FormData();
+      formData.append("resume", resumeBlob, "resume.pdf");
+      formData.append("jd", jd);
+
+      try {
+        const res = await fetch("http://localhost:3000/api/match", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        output.innerHTML = `✅ Match Score: ${
+          data.matchScore
+        }\n\n🔧 Suggestions:\n${data.suggestions
+          .map((s) => `- ${s}`)
+          .join("\n")}`;
+      } catch (err) {
+        console.error(err);
+        showToast("❌ Failed to fetch results");
+      } finally {
+        button.disabled = false;
+        button.innerText = "Analyze";
+      }
+    });
   });
 })();
 
