@@ -19,8 +19,9 @@
     `;
 
   widget.innerHTML = `
-      <div id="drag-header" style="cursor: move; background: #eee; padding: 6px; border-radius: 6px 6px 0 0; font-weight: bold;">
-        📄 MatchMyResume
+      <div id="drag-header" style="cursor: move; background: #eee; padding: 6px; border-radius: 6px 6px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+        <span>📄 MatchMyResume</span>
+        <span id="close-widget" style="cursor: pointer; font-weight: bold; padding: 0 8px;">✖️</span>
       </div>
       <div style="padding-top: 10px">
         <input type="file" id="resume-file" accept=".pdf" /><br><br>
@@ -30,8 +31,11 @@
         <div id="toast-box" style="display:none;position:fixed;top:20px;right:20px;background:#f44336;color:white;padding:8px 12px;border-radius:4px;font-size:14px;z-index:10000;"></div>
       </div>
     `;
-
   document.body.appendChild(widget);
+
+  document.getElementById("close-widget").addEventListener("click", () => {
+    document.getElementById("matchmyresume-widget").remove();
+  });
 
   // 2. Toast utility
   function showToast(msg) {
