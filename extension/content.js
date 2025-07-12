@@ -1,4 +1,3 @@
-// ✅ content.js (Injects floating widget & scrapes JD)
 (function () {
   if (document.getElementById("matchmyresume-widget")) return; // prevent duplicate injection
 
@@ -25,7 +24,10 @@
       </div>
       <div style="padding-top: 10px">
         <input type="file" id="resume-file" accept=".pdf" /><br><br>
-        <textarea id="jd-textarea" placeholder="Job description..." style="width:100%;height:80px;"></textarea><br>
+        <div>
+          <textarea id="jd-textarea" placeholder="Job description..." style="width:100%;height:80px;"></textarea>
+        </div>
+        <br>
         <button id="analyze-btn" style="margin-top:10px;width:100%;background:#4caf50;color:white;padding:6px;border:none;cursor:pointer;">Analyze</button>
         <pre id="output-box" style="white-space:pre-wrap;margin-top:10px;background:#f4f4f4;padding:8px;"></pre>
         <div id="toast-box" style="display:none;position:fixed;top:20px;right:20px;background:#f44336;color:white;padding:8px 12px;border-radius:4px;font-size:14px;z-index:10000;"></div>
@@ -47,20 +49,34 @@
 
   // 3. JD Scraper with MutationObserver
   function extractJD() {
-    const jdContainer =
-      document.querySelector(".jobs-description-content__text") ||
-      document.querySelector(".jobs-description__container");
-    const jobTitle = document.querySelector(
-      "h2.jobs-details-top-card__job-title"
-    )?.innerText;
-    const company = document.querySelector(
-      ".jobs-details-top-card__company-url"
-    )?.innerText;
+    const textarea = document.getElementById("jd-textarea");
 
-    const text = `${jobTitle ? `Title: ${jobTitle}\n` : ""}${
-      company ? `Company: ${company}\n` : ""
-    }${jdContainer ? jdContainer.innerText : ""}`;
-    document.getElementById("jd-textarea").value = text.trim();
+    // Highlight effect: background and text color flash
+    textarea.style.backgroundColor = "#e6f7ff"; // light blue
+    textarea.style.color = "#004085"; // darker blue
+
+    setTimeout(() => {
+      const jdContainer =
+        document.querySelector(".jobs-description-content__text") ||
+        document.querySelector(".jobs-description__container");
+      const jobTitle = document.querySelector(
+        "h2.jobs-details-top-card__job-title"
+      )?.innerText;
+      const company = document.querySelector(
+        ".jobs-details-top-card__company-url"
+      )?.innerText;
+
+      const text = `${jobTitle ? `Title: ${jobTitle}\n` : ""}${
+        company ? `Company: ${company}\n` : ""
+      }${jdContainer ? jdContainer.innerText : ""}`;
+      textarea.value = text.trim();
+
+      // Reset styles after 500ms
+      setTimeout(() => {
+        textarea.style.backgroundColor = "";
+        textarea.style.color = "";
+      }, 500);
+    }, 200); // slight delay for visual effect
   }
 
   const observer = new MutationObserver(() => {
@@ -75,14 +91,20 @@
     const fileInput = document.getElementById("resume-file");
     const jd = document.getElementById("jd-textarea").value;
     const output = document.getElementById("output-box");
+    const button = document.getElementById("analyze-btn");
+
     output.style.maxHeight = "200px";
     output.style.overflowY = "auto";
+
     if (!fileInput.files[0]) return showToast("❌ Please upload resume");
     if (!jd.trim()) return showToast("❌ Job description missing");
 
     const formData = new FormData();
     formData.append("resume", fileInput.files[0]);
     formData.append("jd", jd);
+
+    button.disabled = true;
+    button.innerText = "Thinking... ⏳";
 
     try {
       const res = await fetch("http://localhost:3000/api/match", {
@@ -98,6 +120,9 @@
     } catch (err) {
       console.error(err);
       showToast("❌ Failed to fetch results");
+    } finally {
+      button.disabled = false;
+      button.innerText = "Analyze";
     }
   });
 })();
