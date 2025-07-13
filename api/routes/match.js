@@ -24,12 +24,13 @@ router.post("/match", upload.single("resume"), async (req, res) => {
 
     const logicScore = calculateMatchScore(resumeText, jobDesc);
     const gemini = await getGeminiInsights(resumeText, jobDesc);
-
+    console.log("AI Missing Keywords: ", gemini.missingKeywords);
     res.json({
       logicScore: logicScore.score,
       aiScore: gemini.aiScore,
       keywordsMatched: logicScore.keywordsMatched,
       totalKeywords: logicScore.totalKeywords,
+      missingKeywords: gemini.missingKeywords,
       suggestions: gemini.suggestions,
     });
   } catch (error) {

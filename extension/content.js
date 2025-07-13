@@ -167,6 +167,10 @@
           const data = await res.json();
           output.innerHTML = `✅ Match Score (Keyword Based): ${data.logicScore}
 🤖 AI Match Score: ${data.aiScore || "N/A"}
+
+📌 Missing Keywords:
+${data.missingKeywords.map((k) => `• ${k}`).join("\n")}
+
 🔧 Suggestions:
 ${data.suggestions.map((s) => `${s}`).join("\n")}`;
         } catch (err) {

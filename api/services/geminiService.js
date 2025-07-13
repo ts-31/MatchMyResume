@@ -6,20 +6,27 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function getGeminiInsights(resume, jobDescription) {
   const prompt = `
-You are a helpful and concise resume analyzer.
+You are a concise resume analyzer.
 
-Your task:
-1. Give an AI-based match score between 0–100 for how well the resume fits the job description.
-2. Provide exactly 2 bullet-point suggestions to improve the resume.
+Instructions:
+1. Assign an AI match score between 0–100 for how well the resume fits the job description.
+2. Identify 3–5 important keywords or skills from the JD that are missing in the resume.
+3. Give exactly 2 improvement suggestions, max **10 words each**. Do not exceed 1 line.
 
-Format:
+Respond only in the following format:
+
 Match Score: <number>
 
-Suggestions:
-- <suggestion 1>
-- <suggestion 2>
+Missing Keywords:
+- <keyword1>
+- <keyword2>
+- <keyword3>
 
-Only return the output in this exact format. No extra explanation.
+Suggestions:
+- <short actionable suggestion>
+- <short actionable suggestion>
+
+Avoid explanations, extra lines, or formatting.
 
 Job Description:
 ${jobDescription}
@@ -39,26 +46,40 @@ Your Response:
     const raw = response?.text?.trim();
     console.log("Gemini raw response:\n", raw);
 
-    // Parse output
     const scoreMatch = raw.match(/Match Score:\s*(\d+)/i);
-    const suggestions = raw
-      .split("\n")
-      .map((line) =>
-        line
-          .trim()
-          .replace(/^[-–—]+\s*/, "- ")
-          .replace(/^\-\s*\-+\s*/, "- ")
-      )
-      .filter((line) => line.startsWith("-"));
-
     const aiScore = scoreMatch ? parseInt(scoreMatch[1]) : null;
-    console.log("Ai Score: ", aiScore);
-    console.log("Sugg: ", suggestions);
+
+    const missingKeywords = [];
+    const suggestions = [];
+
+    let inMissing = false,
+      inSuggest = false;
+    for (let line of raw.split("\n")) {
+      line = line.trim();
+      if (/^Missing Keywords:/i.test(line)) {
+        inMissing = true;
+        inSuggest = false;
+        continue;
+      }
+      if (/^Suggestions:/i.test(line)) {
+        inSuggest = true;
+        inMissing = false;
+        continue;
+      }
+
+      if (inMissing && line.startsWith("-")) {
+        missingKeywords.push(line.replace(/^[-–—]+\s*/, "").trim());
+      } else if (inSuggest && line.startsWith("-")) {
+        suggestions.push(line.replace(/^[-–—]+\s*/, "- ").trim());
+      }
+    }
+
     return {
       aiScore: aiScore ?? null,
       suggestions: suggestions.length
         ? suggestions
         : ["No suggestions received."],
+      missingKeywords: missingKeywords.length ? missingKeywords : ["None"],
     };
   } catch (err) {
     console.error("Gemini error:", err.message);
