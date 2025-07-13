@@ -165,11 +165,10 @@
             body: formData,
           });
           const data = await res.json();
-          output.innerHTML = `✅ Match Score: ${
-            data.matchScore
-          }\n\n🔧 Suggestions:\n${data.suggestions
-            .map((s) => `${s}`)
-            .join("\n")}`;
+          output.innerHTML = `✅ Match Score (Keyword Based): ${data.logicScore}
+🤖 AI Match Score: ${data.aiScore || "N/A"}
+🔧 Suggestions:
+${data.suggestions.map((s) => `${s}`).join("\n")}`;
         } catch (err) {
           showToast("❌ Failed to fetch results");
         } finally {
