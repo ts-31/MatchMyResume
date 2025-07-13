@@ -165,17 +165,40 @@
             body: formData,
           });
           const data = await res.json();
+          console.log(data);
           output.innerHTML = `✅ Match Score (Keyword Based): ${data.logicScore}
-🤖 AI Match Score: ${data.aiScore || "N/A"}
-
+🤖 AI Match Score: ${data.aiScore ? `${data.aiScore}/100` : "N/A"}
 📌 Missing Keywords:
-${data.missingKeywords.map((k) => `• ${k}`).join("\n")}
-
+${data.missingKeywords
+  .map(
+    (
+      k,
+      i
+    ) => `<div class="keyword-row" data-key="${k}" style="display: flex; align-items: center; justify-content: space-between; margin: 0; padding: 2px 0;">
+        <span style="font-size: 13px;">${i + 1}. ${k}</span>
+        <button class="copy-btn" style="font-size: 12px; padding: 2px 6px; margin: 0 0 0 10px;">📋</button>
+      </div>`
+  )
+  .join("")}
 🔧 Suggestions:
-${data.suggestions.map((s) => `${s}`).join("\n")}`;
+${data.suggestions.map((s) => `- ${s}`).join("\n")}`;
         } catch (err) {
+          console.log("EEERROR: ", err);
           showToast("❌ Failed to fetch results");
         } finally {
+          setTimeout(() => {
+            const copyButtons = output.querySelectorAll(".copy-btn");
+            copyButtons.forEach((btn) => {
+              btn.addEventListener("click", () => {
+                const keyword = btn.parentElement.getAttribute("data-key");
+                navigator.clipboard
+                  .writeText(keyword)
+                  .then(() => showToast(`✅ Copied: "${keyword}"`))
+                  .catch(() => showToast("❌ Copy failed"));
+              });
+            });
+          }, 0);
+
           button.disabled = false;
           button.innerText = "Analyze";
         }
