@@ -3,10 +3,13 @@
   "name": "MatchMyResume",
   "version": "1.1",
   "description": "Check how well your resume matches a job description",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "host_permissions": ["http://localhost:3000/*"],
   "background": {
     "service_worker": "background.js"
+  },
+  "externally_connectable": {
+    "matches": ["http://127.0.0.1:5500/*"]
   },
   "action": {
     "default_icon": {

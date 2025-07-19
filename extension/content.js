@@ -19,7 +19,7 @@
 
   widget.innerHTML = `
     <div id="drag-header" style="cursor: move; background: #eee; padding: 6px; border-radius: 6px 6px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
-      <span>📄 MatchMyResume</span>
+      <span>📄 MatchMyResume</span><button id="signin">🔐 Sign In</button>
       <span id="close-widget" style="cursor: pointer; font-weight: bold; padding: 0 8px;">✖️</span>
     </div>
     <div style="padding-top: 10px">
@@ -37,12 +37,8 @@
     </div>
   `;
   document.body.appendChild(widget);
-
-  chrome.storage.local.get("resume", (result) => {
-    const status = document.getElementById("resume-status");
-    if (status) {
-      status.textContent = result.resume ? "📎 Resume uploaded" : "";
-    }
+  document.getElementById("signin").addEventListener("click", () => {
+    window.open("http://127.0.0.1:5500/login/index.html", "_blank");
   });
 
   // Toast utility
@@ -56,6 +52,57 @@
       }, 3000);
     }
   }
+
+  // Function to update Sign In button UI based on login status
+  function updateSignInButton() {
+    const signInButton = document.getElementById("signin");
+    if (!signInButton) return;
+
+    chrome.storage.local.get(["clerkJwt"], (result) => {
+      if (result.clerkJwt) {
+        signInButton.innerText = "✅ Logged In";
+        signInButton.style.backgroundColor = "#4caf50";
+        signInButton.style.color = "white";
+        signInButton.disabled = true;
+      } else {
+        signInButton.innerText = "🔐 Sign In";
+        signInButton.style.backgroundColor = "";
+        signInButton.style.color = "";
+        signInButton.disabled = false;
+      }
+    });
+  }
+
+  // Initial checks
+  chrome.storage.local.get(["resume", "justSignedIn"], (result) => {
+    const status = document.getElementById("resume-status");
+    if (status && result.resume) {
+      status.textContent = "📎 Resume uploaded";
+    }
+    if (result.justSignedIn) {
+      showToast("✅ Signed in successfully");
+      chrome.storage.local.remove("justSignedIn", () => {
+        console.log("justSignedIn flag removed on initial check");
+      });
+    }
+    updateSignInButton();
+  });
+
+  // Listen for storage changes to detect justSignedIn and clerkJwt
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === "local") {
+      console.log("Storage changes detected:", changes); // Debug log
+      if (changes.justSignedIn && changes.justSignedIn.newValue) {
+        showToast("✅ Signed in successfully");
+        chrome.storage.local.remove("justSignedIn", () => {
+          console.log("justSignedIn flag removed on storage change");
+        });
+      }
+      if (changes.clerkJwt) {
+        updateSignInButton();
+      }
+    }
+  });
 
   // Resume upload handler
   const resumeInput = document.getElementById("resume-file");
@@ -116,7 +163,6 @@
   observer.observe(jobContainer, { subtree: true, childList: true });
   setTimeout(extractJD, 2000);
 
-  // Analyze button logic
   const analyzeBtn = document.getElementById("analyze-btn");
   if (analyzeBtn) {
     analyzeBtn.addEventListener("click", async () => {
@@ -165,7 +211,7 @@
             body: formData,
           });
           const data = await res.json();
-          console.log(data);
+          console.log("Backend response:", data);
           output.innerHTML = `✅ Match Score (Keyword Based): ${data.logicScore}
 🤖 AI Match Score: ${data.aiScore ? `${data.aiScore}/100` : "N/A"}
 📌 Missing Keywords:
@@ -183,22 +229,9 @@ ${data.missingKeywords
 🔧 Suggestions:
 ${data.suggestions.map((s) => `- ${s}`).join("\n")}`;
         } catch (err) {
-          console.log("EEERROR: ", err);
+          console.log("Backend error:", err);
           showToast("❌ Failed to fetch results");
         } finally {
-          setTimeout(() => {
-            const copyButtons = output.querySelectorAll(".copy-btn");
-            copyButtons.forEach((btn) => {
-              btn.addEventListener("click", () => {
-                const keyword = btn.parentElement.getAttribute("data-key");
-                navigator.clipboard
-                  .writeText(keyword)
-                  .then(() => showToast(`✅ Copied: "${keyword}"`))
-                  .catch(() => showToast("❌ Copy failed"));
-              });
-            });
-          }, 0);
-
           button.disabled = false;
           button.innerText = "Analyze";
         }

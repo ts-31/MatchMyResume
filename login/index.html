@@ -1,0 +1,58 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Clerk Google Sign-In</title>
+    <script>
+      localStorage.clear();
+      sessionStorage.clear();
+    </script>
+    <script
+      async
+      crossorigin="anonymous"
+      data-clerk-publishable-key="pk_test_dXB3YXJkLXNxdWlycmVsLTg4LmNsZXJrLmFjY291bnRzLmRldiQ"
+      src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@4/dist/clerk.browser.js"
+    ></script>
+  </head>
+  <body>
+    <button id="google-signin">Sign in with Google</button>
+
+    <script>
+      window.addEventListener("load", async () => {
+        await window.Clerk.load();
+
+        document
+          .getElementById("google-signin")
+          .addEventListener("click", async () => {
+            await window.Clerk.redirectToSignIn({
+              strategy: "oauth_google",
+              redirectUrl: window.location.href,
+            });
+          });
+
+        const checkSessionAndSend = async () => {
+          const session = Clerk.session;
+          const user = Clerk.user;
+
+          if (session && user) {
+            const token = await session.getToken();
+            console.log("User:", user);
+            console.log("Session Token:", token);
+
+            chrome.runtime.sendMessage(
+              "fifgakmmenlcegpggiddmcigpojmggpj",
+              { type: "CLERK_TOKEN", token },
+              (response) => {
+                console.log("Extension response:", response);
+                window.close();
+              }
+            );
+          } else {
+            console.log("No session or user yet.");
+          }
+        };
+
+        setTimeout(checkSessionAndSend, 1000);
+      });
+    </script>
+  </body>
+</html>
