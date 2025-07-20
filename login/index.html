@@ -1,7 +1,9 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Clerk Google Sign-In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MatchMyResume Login</title>
     <script>
       localStorage.clear();
       sessionStorage.clear();
@@ -12,22 +14,107 @@
       data-clerk-publishable-key="pk_test_dXB3YXJkLXNxdWlycmVsLTg4LmNsZXJrLmFjY291bnRzLmRldiQ"
       src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@4/dist/clerk.browser.js"
     ></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: linear-gradient(to bottom right, #e0f2fe, #bfdbfe);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Arial', sans-serif;
+      }
+      .container {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #1e40af;
+        margin-bottom: 1.5rem;
+      }
+      .signin-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background: linear-gradient(to right, #3b82f6, #1e40af);
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.75rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        width: fit-content;
+        cursor: pointer;
+      }
+      .signin-btn:hover {
+        background: linear-gradient(to right, #60a5fa, #3b82f6);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+      }
+      .signin-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .signin-btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+      .spinner {
+        display: none;
+        border: 4px solid #f3f4f6;
+        border-top: 4px solid #1e40af;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+        margin: 1rem auto;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-    <button id="google-signin">Sign in with Google</button>
+    <div class="container">
+      <div class="logo">📄 MatchMyResume</div>
+      <button id="signin" class="signin-btn">
+        Sign In
+      </button>
+      <div id="loading-spinner" class="spinner"></div>
+    </div>
 
     <script>
       window.addEventListener("load", async () => {
         await window.Clerk.load();
 
-        document
-          .getElementById("google-signin")
-          .addEventListener("click", async () => {
-            await window.Clerk.redirectToSignIn({
-              strategy: "oauth_google",
-              redirectUrl: window.location.href,
-            });
+        const signInButton = document.getElementById("signin");
+        const spinner = document.getElementById("loading-spinner");
+
+        signInButton.addEventListener("click", async () => {
+          signInButton.disabled = true;
+          spinner.style.display = "block";
+          await window.Clerk.redirectToSignIn({
+            redirectUrl: window.location.href,
           });
+        });
 
         const checkSessionAndSend = async () => {
           const session = Clerk.session;
@@ -35,19 +122,13 @@
 
           if (session && user) {
             const token = await session.getToken();
-            console.log("User:", user);
-            console.log("Session Token:", token);
-
             chrome.runtime.sendMessage(
               "fifgakmmenlcegpggiddmcigpojmggpj",
               { type: "CLERK_TOKEN", token },
-              (response) => {
-                console.log("Extension response:", response);
+              () => {
                 window.close();
               }
             );
-          } else {
-            console.log("No session or user yet.");
           }
         };
 
