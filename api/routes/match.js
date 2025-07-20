@@ -8,8 +8,11 @@ const router = express.Router();
 const upload = multer({ dest: "uploads/" });
 
 router.post("/match", upload.single("resume"), async (req, res) => {
+  console.log("REQ comes: ");
+  if (!req.auth?.userId) {
+    return res.status(401).json({ error: "Unauthorized, please sign in" });
+  }
   const { jd: jobDesc } = req.body;
-
   try {
     const resumeText = await parseResume(req.file.path);
     if (!resumeText || resumeText.trim().length < 20)

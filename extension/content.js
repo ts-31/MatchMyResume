@@ -183,12 +183,21 @@
       button.disabled = true;
       button.innerText = "Thinking... ⏳";
 
-      chrome.storage.local.get(["resume"], async (result) => {
+      chrome.storage.local.get(["resume", "clerkJwt"], async (result) => {
         const base64 = result.resume;
+        const token = result.clerkJwt;
+
         if (!base64) {
           button.disabled = false;
           button.innerText = "Analyze";
           showToast("❌ Please upload resume first");
+          return;
+        }
+
+        if (!token) {
+          button.disabled = false;
+          button.innerText = "Analyze";
+          showToast("❌ Please sign in to analyze");
           return;
         }
 
@@ -206,10 +215,28 @@
         formData.append("jd", jd);
 
         try {
+          console.log("Sending request with token:", token); // Debug log
           const res = await fetch("http://localhost:3000/api/match", {
             method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
             body: formData,
           });
+
+          console.log("Response status:", res.status); // Debug log
+          if (!res.ok) {
+            if (res.status === 401) {
+              showToast("❌ Authentication failed, please sign in again");
+              chrome.storage.local.remove(["clerkJwt", "justSignedIn"], () => {
+                updateSignInButton();
+              });
+              return;
+            }
+            const errorData = await res.json();
+            throw new Error(errorData.error || `HTTP error ${res.status}`);
+          }
+
           const data = await res.json();
           console.log("Backend response:", data);
           output.innerHTML = `✅ Match Score (Keyword Based): ${data.logicScore}
@@ -229,8 +256,8 @@ ${data.missingKeywords
 🔧 Suggestions:
 ${data.suggestions.map((s) => `- ${s}`).join("\n")}`;
         } catch (err) {
-          console.log("Backend error:", err);
-          showToast("❌ Failed to fetch results");
+          console.error("Fetch error:", err.message); // Improved error logging
+          showToast(`❌ Failed to fetch results: ${err.message}`);
         } finally {
           button.disabled = false;
           button.innerText = "Analyze";
