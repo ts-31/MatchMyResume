@@ -256,7 +256,6 @@ ${data.missingKeywords
 🔧 Suggestions:
 ${data.suggestions.map((s) => `- ${s}`).join("\n")}`;
         } catch (err) {
-          console.error("Fetch error:", err.message); // Improved error logging
           showToast(`❌ Failed to fetch results: ${err.message}`);
         } finally {
           button.disabled = false;
