@@ -9,7 +9,7 @@
     "service_worker": "background.js"
   },
   "externally_connectable": {
-    "matches": ["http://127.0.0.1:5500/*"]
+    "matches": ["http://127.0.0.1:5500/*", "https://match-my-resume.vercel.app/"]
   },
   "action": {
     "default_icon": {

@@ -38,7 +38,7 @@
   `;
   document.body.appendChild(widget);
   document.getElementById("signin").addEventListener("click", () => {
-    window.open("http://127.0.0.1:5500/login/index.html", "_blank");
+    window.open("https://match-my-resume.vercel.app/", "_blank");
   });
 
   // Toast utility
