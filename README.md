@@ -24,7 +24,7 @@
 | Resume Parsing   | `pdf-parse`                 |
 | AI Suggestions   | Gemini Flash API            |
 | Auth & Storage   | Clerk + Chrome localStorage |
-| API Client       | Axios                       |
+| API Client       | Fetch                       |
 | Deployment       | Run locally for MVP         |
 
 ---
@@ -74,17 +74,31 @@ touch .env
 # GEMINI_API_KEY=your_key_here
 # PORT=3000
 # CLERK_SECRET_KEY=your_clerk_secret_key
-npm run dev
+node index.js
 ```
-### 3. Setup login/index.html
-``` Add your CLERK_PUBLISHABLE_KEY in index.html```
 
-### 3. Setup Gemini (Free)
+### 3. Setup Login Page
+- **Production**: The login page is hosted at `https://match-my-resume.vercel.app/`.
+- **Local Testing**:
+  - Run `login/index.html` using VS Code's Live Server extension (default: `http://127.0.0.1:5500/login/index.html`).
+  - Add your `CLERK_PUBLISHABLE_KEY` to `login/index.html` (from Clerk Dashboard).
+  - Update `extension/content.js` to use your local URL:
+    ```javascript
+    window.open("http://127.0.0.1:5500/login/index.html", "_blank");
+    ```
+  - Update extension/manifest.json to include your local URL:
+    ```json
+    "externally_connectable": {
+      "matches": ["http://127.0.0.1:5500/*", "https://match-my-resume.vercel.app/*"]
+    }
+    ```
+
+### 4. Setup Gemini (Free)
 - Go to [https://makersuite.google.com](https://makersuite.google.com)
 - Create a project, get your **API Key**
 - No billing needed for Gemini Flash (free tier)
 
-### 4. Load Chrome Extension
+### 5. Load Chrome Extension
 - Visit `chrome://extensions`
 - Enable Developer Mode
 - Click “Load Unpacked” and select the `client/` folder
