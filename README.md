@@ -95,17 +95,21 @@ npm run dev
 
 ```
 MatchMyResume/
-├── extension/               # Chrome Extension code
-│   ├── content.js
-│   ├── background.js
-│   └── manifest.json
-├── login/                  # Google Sign-In page (Clerk)
-│   └── index.html
-├── api/                    # Node.js backend with Gemini
-│   ├── index.js
+├── api/                          # Node.js backend with Gemini
 │   ├── routes/
+│   │   └── match.js
 │   ├── services/
-│   └── .env
+│   │   ├── geminiService.js      # Handles Gemini API calls
+│   │   ├── matchScorer.js        # Logic for calculating match score
+│   │   └── resumeParser.js       # Logic for parsing resumes
+│   ├── .env
+│   └── index.js
+├── extension/                    # Chrome Extension code
+│   ├── background.js
+│   ├── content.js
+│   └── manifest.json
+├── login/                        # Google Sign-In page (Clerk)
+│   └── index.html
 └── README.md
 ```
 
