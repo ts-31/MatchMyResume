@@ -113,14 +113,22 @@ MatchMyResume/
 │   ├── routes/
 │   │   └── match.js
 │   ├── services/
-│   │   ├── geminiService.js      # Handles Gemini API calls
-│   │   ├── matchScorer.js        # Logic for calculating match score
-│   │   └── resumeParser.js       # Logic for parsing resumes
+│   │   ├── geminiService.js
+│   │   ├── matchScorer.js
+│   │   └── resumeParser.js
 │   ├── .env
 │   └── index.js
 ├── extension/                    # Chrome Extension code
+│   ├── scripts/                 # New directory for modular scripts
+│   │   ├── analyze.js         # Analyze button and API logic
+│   │   ├── auth.js            # Authentication logic
+│   │   ├── drag.js           # Drag functionality
+│   │   ├── jobDescription.js  # Job description scraping
+│   │   ├── resume.js          # Resume upload logic
+│   │   ├── utils.js          # Shared utilities (e.g., showToast)
+│   │   └── widget.js           # Widget creation
 │   ├── background.js
-│   ├── content.js
+│   ├── content.js            # Main script to initialize modules
 │   └── manifest.json
 ├── login/                        # Google Sign-In page (Clerk)
 │   └── index.html
