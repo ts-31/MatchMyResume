@@ -40,7 +40,16 @@ chrome.action.onClicked.addListener((tab) => {
   chrome.scripting
     .executeScript({
       target: { tabId: tab.id },
-      files: ["content.js"],
+      files: [
+        "scripts/widget.js",
+        "scripts/utils.js",
+        "scripts/auth.js",
+        "scripts/resume.js",
+        "scripts/jobDescription.js",
+        "scripts/analyze.js",
+        "scripts/drag.js",
+        "content.js",
+      ],
     })
     .catch((err) => {
       console.warn("Injection failed silently:", err.message);

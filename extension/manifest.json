@@ -9,7 +9,10 @@
     "service_worker": "background.js"
   },
   "externally_connectable": {
-    "matches": ["http://127.0.0.1:5500/*", "https://match-my-resume.vercel.app/"]
+    "matches": [
+      "http://127.0.0.1:5500/*",
+      "https://match-my-resume.vercel.app/"
+    ]
   },
   "action": {
     "default_icon": {
@@ -22,5 +25,20 @@
     "16": "icon.png",
     "48": "icon.png",
     "128": "icon.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "scripts/widget.js",
+        "scripts/utils.js",
+        "scripts/auth.js",
+        "scripts/resume.js",
+        "scripts/jobDescription.js",
+        "scripts/analyze.js",
+        "scripts/drag.js",
+        "content.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
