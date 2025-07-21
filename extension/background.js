@@ -28,7 +28,7 @@ chrome.action.onClicked.addListener((tab) => {
   }
 
   // Allow only known job-related websites
-  const supportedHosts = ["www.linkedin.com"];
+  const supportedHosts = ["www.linkedin.com", "internshala.com"];
 
   const isSupportedHost = supportedHosts.includes(url.hostname);
 
