@@ -255,6 +255,17 @@ ${data.missingKeywords
   .join("")}
 🔧 Suggestions:
 ${data.suggestions.map((s) => `- ${s}`).join("\n")}`;
+          output.querySelectorAll(".copy-btn").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              const keyword = e.target.closest(".keyword-row")?.dataset.key;
+              if (keyword) {
+                navigator.clipboard
+                  .writeText(keyword)
+                  .then(() => showToast(`📋 Copied: ${keyword}`))
+                  .catch(() => showToast("❌ Failed to copy"));
+              }
+            });
+          });
         } catch (err) {
           showToast(`❌ Failed to fetch results: ${err.message}`);
         } finally {
