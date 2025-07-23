@@ -7,7 +7,9 @@
 ## 🚀 Features (MVP)
 
 - 📄 Upload resume (PDF or text)
-- 🔍 Extract job description from websites like LinkedIn/Naukri
+- 🔍 Extract job descriptions from supported platforms:
+  - LinkedIn (`https://www.linkedin.com/jobs`)
+  - Internshala (`https://internshala.com/internships/`)
 - 📊 Calculate match score (based on keyword overlap)
 - 🤖 Generate improvement suggestions using **Gemini Flash**
 - 🔐 Google Sign-In via Clerk for authentication (stored securely with Chrome local storage)
@@ -25,7 +27,7 @@
 | AI Suggestions   | Gemini Flash API            |
 | Auth & Storage   | Clerk + Chrome localStorage |
 | API Client       | Fetch                       |
-| Deployment       | Run locally for MVP         |
+| Deployment       | Vercel (login page), Local (backend for MVP) |
 
 ---
 
@@ -53,7 +55,6 @@ While implementing Clerk sign-in inside the Chrome Extension, I faced the follow
 - Used `chrome.tabs.query` and `chrome.tabs.sendMessage` to notify the extension UI.
 - Stored the Clerk token in `chrome.storage.local` for persistence.
 - Cleared localStorage after sign-in to prevent token leakage from the login page.
-
 
 ---
 
@@ -101,7 +102,8 @@ node index.js
 ### 5. Load Chrome Extension
 - Visit `chrome://extensions`
 - Enable Developer Mode
-- Click “Load Unpacked” and select the `client/` folder
+- Click “Load Unpacked” and select the `extension/` folder
+- Test on supported platforms: LinkedIn (https://www.linkedin.com/jobs) and Internshala (https://internshala.com/internships/).
 
 ---
 
@@ -113,22 +115,22 @@ MatchMyResume/
 │   ├── routes/
 │   │   └── match.js
 │   ├── services/
-│   │   ├── geminiService.js
-│   │   ├── matchScorer.js
-│   │   └── resumeParser.js
+│   │   ├── geminiService.js      # Handles Gemini API calls
+│   │   ├── matchScorer.js        # Logic for calculating match score
+│   │   └── resumeParser.js       # Logic for parsing resumes
 │   ├── .env
 │   └── index.js
 ├── extension/                    # Chrome Extension code
-│   ├── scripts/                 # New directory for modular scripts
-│   │   ├── analyze.js         # Analyze button and API logic
-│   │   ├── auth.js            # Authentication logic
-│   │   ├── drag.js           # Drag functionality
-│   │   ├── jobDescription.js  # Job description scraping
-│   │   ├── resume.js          # Resume upload logic
-│   │   ├── utils.js          # Shared utilities (e.g., showToast)
+│   ├── scripts/                 # Modular scripts
+│   │   ├── analyze.js           # Analyze button and API logic
+│   │   ├── auth.js              # Authentication logic
+│   │   ├── drag.js             # Drag functionality
+│   │   ├── jobDescription.js    # Job description scraping
+│   │   ├── resume.js            # Resume upload logic
+│   │   ├── utils.js            # Shared utilities (e.g., showToast)
 │   │   └── widget.js           # Widget creation
 │   ├── background.js
-│   ├── content.js            # Main script to initialize modules
+│   ├── content.js               # Main script to initialize modules
 │   └── manifest.json
 ├── login/                        # Google Sign-In page (Clerk)
 │   └── index.html
