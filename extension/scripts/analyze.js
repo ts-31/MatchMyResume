@@ -81,22 +81,47 @@ function initializeAnalyze(showToast) {
 
           const data = await res.json();
           console.log("Backend response:", data);
-          output.innerHTML = `✅ Match Score (Keyword Based): ${data.logicScore}
-🤖 AI Match Score: ${data.aiScore ? `${data.aiScore}/100` : "N/A"}
-📌 Missing Keywords:
-${data.missingKeywords
-  .map(
-    (
-      k,
-      i
-    ) => `<div class="keyword-row" data-key="${k}" style="display: flex; align-items: center; justify-content: space-between; margin: 0; padding: 2px 0;">
-        <span style="font-size: 13px;">${i + 1}. ${k}</span>
-        <button class="copy-btn" style="font-size: 12px; padding: 2px 6px; margin: 0 0 0 10px;">📋</button>
-      </div>`
-  )
-  .join("")}
-🔧 Suggestions:
-${data.suggestions.map((s) => `- ${s}`).join("\n")}`;
+          output.innerHTML = `
+  <!-- Scores Section with increased line spacing -->
+  <div style="margin-bottom: 20px;">
+    <div style="margin-bottom: 8px; line-height: 1.8;">✅ Match Score (Keyword Based): ${
+      data.logicScore
+    }</div>
+    <div style="margin-bottom: 8px; line-height: 1.8;">🤖 AI Match Score: ${
+      data.aiScore ? `${data.aiScore}/100` : "N/A"
+    }</div>
+  </div>
+
+  <!-- Missing Keywords Section with section spacing -->
+  <div style="margin-bottom: 20px;">
+    <div style="margin-bottom: 10px; font-weight: bold; line-height: 1.8;">📌 Missing Keywords:</div>
+    ${data.missingKeywords
+      .map(
+        (k, i) => `
+          <div class="keyword-row" data-key="${k}" style="display: flex; align-items: center; justify-content: space-between; margin: 6px 0; padding: 8px 0; line-height: 1.6;">
+            <span>${i + 1}. ${k}</span>
+            <button class="copy-btn" style="font-size: 11px; padding: 2px 6px; margin: 0 0 0 8px;">📋</button>
+          </div>
+        `
+      )
+      .join("")}
+  </div>
+
+  <!-- Suggestions Section with section spacing -->
+  <div style="margin-bottom: 10px;">
+    <div style="margin-bottom: 10px; font-weight: bold; line-height: 1.8;">🔧 Suggestions:</div>
+    <ul class="suggestions-list" style="margin: 0; padding: 0 0 0 20px; list-style: none;">
+      ${data.suggestions
+        .map(
+          (s) =>
+            `<li style="margin: 8px 0; padding: 0; line-height: 1.7; position: relative;">
+              <span style="position: absolute; left: -15px;">•</span>${s}
+            </li>`
+        )
+        .join("")}
+    </ul>
+  </div>
+`;
           output.querySelectorAll(".copy-btn").forEach((btn) => {
             btn.addEventListener("click", (e) => {
               const keyword = e.target.closest(".keyword-row")?.dataset.key;
