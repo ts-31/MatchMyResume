@@ -134,7 +134,7 @@ function initializeAnalyze(showToast) {
             });
           });
         } catch (err) {
-          showToast(`❌ Failed to fetch results: ${err.message}`);
+          showToast(`❌ ${err.message}`);
         } finally {
           button.disabled = false;
           button.innerText = "Analyze";
