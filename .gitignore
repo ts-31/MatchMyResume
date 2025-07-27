@@ -33,3 +33,21 @@ package-lock.json
 
 # Coverage
 coverage/
+
+# Package lock
+package-lock.json
+
+# Coverage
+coverage/
+
+
+# Python / FastAPI
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python virtual environment
+api_fastapi/venv/
+api_fastapi/.env
+api_fastapi/uploads/
