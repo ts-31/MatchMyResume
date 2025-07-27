@@ -19,14 +19,16 @@
 
 ## 🧰 Tech Stack
 
-| Layer           | Technology                  |
-|------------------|-----------------------------|
-| Frontend         | Chrome Extension (HTML, JS) |
-| Backend          | Node.js + Express           |
-| Resume Parsing   | `pdf-parse`                 |
-| AI Suggestions   | Gemini Flash API            |
-| Auth & Storage   | Clerk + Chrome localStorage |
-| API Client       | Fetch                       |
+| Layer             | Technology                        |
+|------------------|------------------------------------|
+| Frontend         | Chrome Extension (HTML, JS)        |
+| Backend          | Node.js + Express                  |
+| Resume Parsing   | `pdf-parse`                        |
+| AI Suggestions   | Gemini 2.5 Flash (via API)         |
+| Auth & Identity  | Clerk (Google OAuth) + JWT         |
+| Storage          | Chrome localStorage                |
+| Database         | PostgreSQL (via Neon or local)     |
+| API Client       | Fetch                              |
 | Deployment       | Vercel (login page), Local (backend for MVP) |
 
 ---
@@ -56,6 +58,57 @@ While implementing Clerk sign-in inside the Chrome Extension, I faced the follow
 - Stored the Clerk token in `chrome.storage.local` for persistence.
 - Cleared localStorage after sign-in to prevent token leakage from the login page.
 
+---
+
+### 🧠 Lazy User Creation Strategy
+
+We use a **just-in-time (lazy) user creation** pattern in our backend:
+
+- A user is only inserted into the `users` table **the first time** they hit `/api/match`.
+- This prevents unnecessary DB writes for users who sign in but never use the feature.
+- It's implemented with a safe upsert:
+  ```sql
+  INSERT INTO users (id, email)
+  VALUES ($1, $2)
+  ON CONFLICT (id) DO NOTHING;
+  ```
+
+> This approach is scalable, avoids redundant records, and is commonly used in production apps like Stripe, Supabase, and Firebase.
+
+---
+
+#### 🛠️ Clerk Setup for Contributors
+To test authentication, you need to configure Clerk to include the user's email in the session token for backend API calls. Follow these steps:
+
+1. **Create a Clerk Account**:
+   - Sign up at [Clerk Dashboard](https://dashboard.clerk.com/sign-up) and create a new application.
+
+2. **Enable Google Sign-In**:
+   - In the Clerk Dashboard, go to **Authentication > Providers**.
+   - Enable **Google** as a social login provider and configure it with your Google OAuth credentials (see [Clerk's Social Login Docs](https://clerk.com/docs/authentication/social-login)).
+
+3. **Customize Session Token for Email Claim**:
+   - To include the user's email in the session token:
+     - Go to **Sessions** in the Clerk Dashboard.
+     - Under **Customize session token**, add the following to the Claims editor:
+       ```json
+       {
+         "primaryEmail": "{{user.primary_email_address}}"
+       }
+       ```
+     - Save the changes.
+
+4. **Set Up API Keys**:
+   - In the Clerk Dashboard, go to **API Keys**.
+   - Copy the **Publishable Key** (for the Chrome Extension) and **Secret Key** (for the Node.js backend).
+   - Add the **Secret Key** to your backend `.env` file:
+     ```env
+     CLERK_SECRET_KEY=your_clerk_secret_key
+     ```
+   - Add the **Publishable Key** to `login/index.html`:
+     ```html
+     <script data-clerk-publishable-key='your_clerk_publishable_key'></script>
+     ```
 ---
 
 ## 🧑‍💻 Setup Instructions
@@ -93,13 +146,21 @@ node index.js
       "matches": ["http://127.0.0.1:5500/*", "https://match-my-resume.vercel.app/*"]
     }
     ```
+### 4. Setup PostgreSQL
+- If you're using Neon or local PostgreSQL, run this SQL to create the users table:
+  ```sql
+  CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  email TEXT
+  );
+  ```
 
-### 4. Setup Gemini (Free)
+### 5. Setup Gemini (Free)
 - Go to [https://makersuite.google.com](https://makersuite.google.com)
 - Create a project, get your **API Key**
 - No billing needed for Gemini Flash (free tier)
 
-### 5. Load Chrome Extension
+### 6. Load Chrome Extension
 - Visit `chrome://extensions`
 - Enable Developer Mode
 - Click “Load Unpacked” and select the `extension/` folder
@@ -112,12 +173,15 @@ node index.js
 ```
 MatchMyResume/
 ├── api/                          # Node.js backend with Gemini
+│   ├── config/
+│   │   └── db.js                 # PostgreSQL connection pool
 │   ├── routes/
 │   │   └── match.js
 │   ├── services/
 │   │   ├── geminiService.js      # Handles Gemini API calls
 │   │   ├── matchScorer.js        # Logic for calculating match score
-│   │   └── resumeParser.js       # Logic for parsing resumes
+│   │   ├── resumeParser.js       # Logic for parsing resumes
+│   │   └── userService.js       
 │   ├── .env
 │   └── index.js
 ├── extension/                    # Chrome Extension code
