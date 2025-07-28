@@ -22,7 +22,7 @@
 | Layer             | Technology                        |
 |------------------|------------------------------------|
 | Frontend         | Chrome Extension (HTML, JS)        |
-| Backend          | Node.js + Express                  |
+| Backend          | Python + FastAPI                   |
 | Resume Parsing   | `pdf-parse`                        |
 | AI Suggestions   | Gemini 2.5 Flash (via API)         |
 | Auth & Identity  | Clerk (Google OAuth) + JWT         |
@@ -121,14 +121,14 @@ cd MatchMyResume
 
 ### 2. Setup Backend
 ```bash
-cd api
-npm install
+cd api_fastapi
+pip install -r requirements.txt
 touch .env
-# Add your Gemini API key in .env:
+# Add your API keys:
 # GEMINI_API_KEY=your_key_here
-# PORT=3000
 # CLERK_SECRET_KEY=your_clerk_secret_key
-node index.js
+#DATABASE_URL=your_db_url
+uvicorn main:app --reload --port 3000
 ```
 
 ### 3. Setup Login Page
@@ -172,18 +172,18 @@ node index.js
 
 ```
 MatchMyResume/
-├── api/                          # Node.js backend with Gemini
-│   ├── config/
-│   │   └── db.js                 # PostgreSQL connection pool
+├── api_fastapi/                          # Node.js backend with Gemini
+│   ├── db/
+│   │   └── connect.py                # PostgreSQL connection pool
 │   ├── routes/
-│   │   └── match.js
+│   │   └── match.py
 │   ├── services/
-│   │   ├── geminiService.js      # Handles Gemini API calls
-│   │   ├── matchScorer.js        # Logic for calculating match score
-│   │   ├── resumeParser.js       # Logic for parsing resumes
-│   │   └── userService.js       
+│   │   ├── gemini.py      # Handles Gemini API calls
+│   │   ├── resumeParser.py        # Logic for calculating match score
+│   │   ├── scorer.py       # Logic for parsing resumes
+│   │   └── users.py      
 │   ├── .env
-│   └── index.js
+│   └── main.py
 ├── extension/                    # Chrome Extension code
 │   ├── scripts/                 # Modular scripts
 │   │   ├── analyze.js           # Analyze button and API logic
