@@ -66,25 +66,6 @@ function createWidget() {
         padding: 0 !important;
       ">📄 MatchMyResume</span>
       
-      <button id="signin" style="
-        /* Sign In button - standardized to prevent unwanted borders */
-        all: initial;
-        background: #007cba !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 4px !important;
-        padding: 4px 8px !important;
-        font-size: 12px !important;
-        font-family: Arial, sans-serif !important;
-        cursor: pointer !important;
-        outline: none !important;
-        box-sizing: border-box !important;
-        margin: 0 !important;
-        display: inline-block !important;
-        text-decoration: none !important;
-        line-height: 1 !important;
-      ">🔐 Sign In</button>
-      
       <span id="close-widget" style="
         all: initial;
         cursor: pointer !important;

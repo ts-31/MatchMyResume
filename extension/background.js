@@ -43,7 +43,6 @@ chrome.action.onClicked.addListener((tab) => {
       files: [
         "scripts/widget.js",
         "scripts/utils.js",
-        "scripts/auth.js",
         "scripts/resume.js",
         "scripts/jobDescription.js",
         "scripts/analyze.js",
