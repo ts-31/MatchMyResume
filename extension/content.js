@@ -6,7 +6,6 @@
   const toast = showToast;
 
   // Initialize modules
-  initializeAuth(toast);
   initializeResume(toast);
   initializeAnalyze(toast);
   const observer = initializeJobDescription();

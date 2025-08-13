@@ -19,9 +19,8 @@ function initializeAnalyze(showToast) {
       button.disabled = true;
       button.innerText = "Thinking... ⏳";
 
-      chrome.storage.local.get(["resume", "clerkJwt"], async (result) => {
+      chrome.storage.local.get(["resume"], async (result) => {
         const base64 = result.resume;
-        const token = result.clerkJwt;
 
         if (!base64) {
           button.disabled = false;
@@ -30,13 +29,7 @@ function initializeAnalyze(showToast) {
           return;
         }
 
-        if (!token) {
-          button.disabled = false;
-          button.innerText = "Analyze";
-          showToast("❌ Please sign in to analyze");
-          return;
-        }
-
+        // Convert base64 to Blob
         const byteString = atob(base64.split(",")[1]);
         const mimeString = base64.split(",")[0].split(":")[1].split(";")[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -46,41 +39,27 @@ function initializeAnalyze(showToast) {
         }
         const resumeBlob = new Blob([ab], { type: mimeString });
 
+        // Create form data
         const formData = new FormData();
         formData.append("resume", resumeBlob, "resume.pdf");
         formData.append("jd", jd);
 
         try {
-          console.log("Sending request with token:", token);
-          const res = await fetch("http://localhost:3000/api/match", {
+          console.log("Sending request without auth...");
+          const res = await fetch("http://localhost:8000/api/match", {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
             body: formData,
           });
 
           console.log("Response status:", res.status);
           if (!res.ok) {
-            if (res.status === 401) {
-              showToast("❌ Authentication failed, please sign in again");
-              chrome.storage.local.remove(["clerkJwt", "justSignedIn"], () => {
-                const signInButton = document.getElementById("signin");
-                if (signInButton) {
-                  signInButton.innerText = "🔐 Sign In";
-                  signInButton.style.backgroundColor = "";
-                  signInButton.style.color = "";
-                  signInButton.disabled = false;
-                }
-              });
-              return;
-            }
             const errorData = await res.json();
             throw new Error(errorData.error || `HTTP error ${res.status}`);
           }
 
           const data = await res.json();
           console.log("Backend response:", data);
+
           output.innerHTML = `
   <!-- Scores Section with increased line spacing -->
   <div style="margin-bottom: 20px;">
@@ -122,6 +101,8 @@ function initializeAnalyze(showToast) {
     </ul>
   </div>
 `;
+
+          // Copy buttons
           output.querySelectorAll(".copy-btn").forEach((btn) => {
             btn.addEventListener("click", (e) => {
               const keyword = e.target.closest(".keyword-row")?.dataset.key;
