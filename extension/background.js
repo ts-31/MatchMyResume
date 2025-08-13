@@ -1,21 +1,3 @@
-chrome.runtime.onMessageExternal.addListener((msg, sender, sendResponse) => {
-  if (msg.type === "CLERK_TOKEN" && msg.token) {
-    chrome.storage.local.set(
-      {
-        clerkJwt: msg.token,
-        justSignedIn: true,
-      },
-      () => {
-        console.log("Token saved in chrome.storage.local");
-      }
-    );
-    sendResponse({ success: true });
-  } else {
-    sendResponse({ success: false });
-  }
-  return true;
-});
-
 chrome.action.onClicked.addListener((tab) => {
   if (!tab.url) return;
 
