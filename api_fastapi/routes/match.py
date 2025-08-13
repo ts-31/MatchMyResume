@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, Request, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from tempfile import NamedTemporaryFile
 import shutil
@@ -6,42 +6,13 @@ import shutil
 from services.gemini import get_gemini_insights
 from services.resumeParser import parse_resume
 from services.scorer import calculate_match_score
-from services.users import upsert_user
-from db.connect import get_pool
-from auth.clerk import get_user_info_from_token
 
 router = APIRouter()
 
 
 @router.post("/match")
-async def match_resume(
-    request: Request, resume: UploadFile = File(...), jd: str = Form(...)
-):
+async def match_resume(resume: UploadFile = File(...), jd: str = Form(...)):
     print("📥 Received /match request")
-
-    # ✅ Decode JWT and extract Clerk user info
-    try:
-        user_id, email = get_user_info_from_token(request)
-        print(f"✅ Authenticated user: {user_id}, Email: {email}")
-    except HTTPException as e:
-        print(f"❌ Auth error: {e.detail}")
-        raise e
-
-    # ✅ Lazy insert user if not exists
-    try:
-        if email:
-            db = await get_pool()
-            inserted = await upsert_user(db, user_id, email)
-            if inserted:
-                print(f"📝 Inserted new user: {user_id} ({email})")
-            else:
-                print(f"ℹ️ User already exists: {user_id}")
-
-        else:
-            print(f"⚠️ No email found for user {user_id}, skipping DB insert")
-    except Exception as e:
-        print("❌ DB error while upserting user:", e)
-        raise HTTPException(status_code=500, detail="Failed to store user")
 
     # ✅ Save uploaded resume to temp file
     try:
@@ -68,11 +39,12 @@ async def match_resume(
                 status_code=400, detail="Job description is too short or missing."
             )
 
-        # logic_score = calculate_match_score(resume_text, jd)
+        # Calculate match score
         logic_score, matched_count, total_keywords = calculate_match_score(
             resume_text, jd
         )
 
+        # Get AI-powered suggestions
         gemini = await get_gemini_insights(resume_text, jd)
 
         print("✅ Successfully processed resume and job description")

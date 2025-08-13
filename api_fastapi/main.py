@@ -12,6 +12,7 @@ origins = [
     "http://127.0.0.1:5500",
     "https://www.linkedin.com",
     "https://internshala.com",
+    "http://localhost:3000"
 ]
 
 app.add_middleware(
