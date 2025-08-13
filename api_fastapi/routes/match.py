@@ -14,7 +14,7 @@ router = APIRouter()
 async def match_resume(resume: UploadFile = File(...), jd: str = Form(...)):
     print("📥 Received /match request")
 
-    # ✅ Save uploaded resume to temp file
+    # Save uploaded resume
     try:
         with NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             shutil.copyfileobj(resume.file, tmp)
@@ -24,7 +24,7 @@ async def match_resume(resume: UploadFile = File(...), jd: str = Form(...)):
         print("❌ Resume save error:", e)
         raise HTTPException(status_code=400, detail="Failed to save uploaded file")
 
-    # ✅ Process resume and job description
+    # Parse resume & match
     try:
         resume_text = parse_resume(temp_path)
         print(f"🧾 Resume parsed, length: {len(resume_text.strip())} characters")
@@ -39,12 +39,9 @@ async def match_resume(resume: UploadFile = File(...), jd: str = Form(...)):
                 status_code=400, detail="Job description is too short or missing."
             )
 
-        # Calculate match score
         logic_score, matched_count, total_keywords = calculate_match_score(
             resume_text, jd
         )
-
-        # Get AI-powered suggestions
         gemini = await get_gemini_insights(resume_text, jd)
 
         print("✅ Successfully processed resume and job description")
