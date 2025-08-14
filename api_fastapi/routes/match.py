@@ -24,7 +24,6 @@ async def match_resume(resume: UploadFile = File(...), jd: str = Form(...)):
         print("❌ Resume save error:", e)
         raise HTTPException(status_code=400, detail="Failed to save uploaded file")
 
-    # Parse resume & match
     try:
         resume_text = parse_resume(temp_path)
         print(f"🧾 Resume parsed, length: {len(resume_text.strip())} characters")
@@ -39,19 +38,18 @@ async def match_resume(resume: UploadFile = File(...), jd: str = Form(...)):
                 status_code=400, detail="Job description is too short or missing."
             )
 
-        logic_score, matched_count, total_keywords = calculate_match_score(
-            resume_text, jd
-        )
+        # Get keyword match score
+        match_score = calculate_match_score(resume_text, jd)
+
+        # Get AI insights
         gemini = await get_gemini_insights(resume_text, jd)
 
         print("✅ Successfully processed resume and job description")
 
         return JSONResponse(
             content={
-                "logicScore": logic_score,
+                "matchScore": match_score,
                 "aiScore": gemini["aiScore"],
-                "keywordsMatched": matched_count,
-                "totalKeywords": total_keywords,
                 "missingKeywords": gemini["missingKeywords"],
                 "suggestions": gemini["suggestions"],
             }
