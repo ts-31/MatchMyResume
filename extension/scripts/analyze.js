@@ -64,7 +64,7 @@ function initializeAnalyze(showToast) {
   <!-- Scores Section with increased line spacing -->
   <div style="margin-bottom: 20px;">
     <div style="margin-bottom: 8px; line-height: 1.8;">✅ Match Score (Keyword Based): ${
-      data.logicScore
+      data.matchScore
     }</div>
     <div style="margin-bottom: 8px; line-height: 1.8;">🤖 AI Match Score: ${
       data.aiScore ? `${data.aiScore}/100` : "N/A"
