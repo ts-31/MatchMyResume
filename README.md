@@ -20,13 +20,14 @@ This MVP version uses **Google Gemini API (Free Tier)** to provide smart suggest
 ## 🧰 Tech Stack
 
 | Layer             | Technology                        |
-|------------------|------------------------------------|
-| Frontend         | Chrome Extension (HTML, JS)        |
-| Backend          | Python + FastAPI                   |
-| Resume Parsing   | pdfminer.six / PyMuPDF              |
-| AI Suggestions   | Gemini 2.5 Flash (via API)         |
-| Storage          | Chrome localStorage                |
-| API Client       | Fetch                              |
+|-------------------|-----------------------------------|
+| Frontend          | Chrome Extension (HTML, JS)       |
+| Frontend (Web)    | Next.js + Tailwind CSS            |
+| Backend           | Python + FastAPI                  |
+| Resume Parsing    | pdfminer.six / PyMuPDF            |
+| AI Suggestions    | Gemini 2.5 Flash (via API)        |
+| Storage           | Chrome localStorage               |
+| API Client        | Fetch                             |
 
 ---
 
@@ -59,6 +60,13 @@ uvicorn main:app --reload --port 8000
 - Click “Load Unpacked” and select the `extension/` folder
 - Test on supported platforms: LinkedIn (https://www.linkedin.com/jobs) and Internshala (https://internshala.com/internships/).
 
+
+### 5. 4. Frontend Setup (Next.js)
+```bash
+cd ../web
+npm install
+npm run dev
+```
 ---
 
 ## 📂 Folder Structure
@@ -85,6 +93,15 @@ MatchMyResume/
 │   ├── background.js
 │   ├── content.js                        # Main script to initialize modules
 │   └── manifest.json
+├── web/                                  # Next.js frontend
+│   ├── src/app/
+│   │   ├── components/ProgressSteps.js   # Upload/analysis animation
+│   │   ├── workspace/page.js             # Resume workspace
+│   │   ├── page.js                       # Landing Page
+│   │   └── globals.css                   # Tailwind base styles
+│   ├── public/
+│   ├── package.json
+│   └── tailwind.config.js
 └── README.md
 ```
 
